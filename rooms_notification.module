@@ -1,0 +1,123 @@
+<?php
+
+/**
+ * @file
+ * Manage Notification - All kind of notification related with Rooms module.
+ * (e.g. rooms - email notification, etc).
+ */
+
+/**
+ * Implements hook_token_info_alter().
+ *
+ * Adding token related with booking details and customer name.
+ */
+function rooms_notification_token_info_alter(&$info) {
+  $info['tokens']['commerce-order']['rooms-order-details'] = array(
+    'name' => t('Rooms Order booking details'),
+    'description' => t('Booking details of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-name'] = array(
+    'name' => t('Rooms Order Customer Name'),
+    'description' => t('Customer name of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-country'] = array(
+    'name' => t('Rooms Order Customer Country'),
+    'description' => t('Customer country of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-location'] = array(
+    'name' => t('Rooms Order Customer location'),
+    'description' => t('Customer location of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-thoroughfare'] = array(
+    'name' => t('Rooms Order Customer thoroughfare'),
+    'description' => t('Customer Thoroughfare of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-administrative-area'] = array(
+    'name' => t('Rooms Order Customer administrative area'),
+    'description' => t('Customer Administrative area of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-customer-postal-code'] = array(
+    'name' => t('Rooms Order Customer postal code'),
+    'description' => t('Customer postal code of a Rooms Order.'),
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function rooms_notification_tokens($type, $tokens, array $data = array(), array $options = array()) {
+
+  $url_options = array('absolute' => TRUE);
+
+  if (isset($options['language'])) {
+    $url_options['language'] = $options['language'];
+    $language_code = $options['language']->language;
+  }
+  else {
+    $language_code = NULL;
+  }
+
+  $sanitize = !empty($options['sanitize']);
+
+  $replacements = array();
+
+  if ($type == 'commerce-order' && !empty($data['commerce-order'])) {
+    $order = $data['commerce-order'];
+
+    $line_item_details = '';
+    // Saving all rooms booking details.
+    foreach ($order->commerce_line_items['und'] as $line_item) {
+      $element = commerce_line_item_load($line_item['line_item_id']);
+      $line_item_details .= $element->line_item_label . "\n";
+      if (!empty($element->rooms_booking_options)) {
+        foreach ($element->rooms_booking_options['und'] as $option) {
+          $line_item_details .= t('- Room Option :') . $option['name'] . "; ";
+          $line_item_details .= t('Quantity :') . $option['quantity'] . "; ";
+          $line_item_details .= t('Single option cost :') . $option['value'] . ";" . "\n";
+        }
+      }
+    }
+    // Load Customer profile to get some information.
+    $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
+    $customer_name = $customer_profile->commerce_customer_address['und'][0]['name_line'];
+    $customer_country = $customer_profile->commerce_customer_address['und'][0]['country'];
+    $customer_thoroughfare = $customer_profile->commerce_customer_address['und'][0]['thoroughfare'];
+    $customer_administrative_area = $customer_profile->commerce_customer_address['und'][0]['administrative_area'];
+    $customer_postal_code = $customer_profile->commerce_customer_address['und'][0]['postal_code'];
+    $customer_location = $customer_profile->commerce_customer_address['und'][0]['locality'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'rooms-order-details':
+          $replacements[$original] = $line_item_details;
+          break;
+
+        case 'rooms-order-customer-name':
+          $replacements[$original] = $customer_name;
+          break;
+
+        case 'rooms-order-customer-country':
+          $replacements[$original] = $customer_country;
+          break;
+
+        case 'rooms-order-customer-thoroughfare':
+          $replacements[$original] = $customer_thoroughfare;
+          break;
+
+        case 'rooms-order-customer-administrative-area':
+          $replacements[$original] = $customer_administrative_area;
+          break;
+
+        case 'rooms-order-customer-postal-code':
+          $replacements[$original] = $customer_postal_code;
+          break;
+
+        case 'rooms-order-customer-location':
+          $replacements[$original] = $customer_location;
+          break;
+      }
+    }
+  }
+
+  return $replacements;
+}
