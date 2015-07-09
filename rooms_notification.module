@@ -121,3 +121,17 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
 
   return $replacements;
 }
+
+/**
+ * Implements hook_pet_substitutions_alter().
+ */
+function rooms_notification_pet_substitutions_alter(&$substitutions, $params) {
+  if (isset($params['rules_state'])) {
+    $order = $params['rules_state']->variables['commerce_order']->value();
+    $order_load = commerce_order_load($order->order_id);
+    $substitutions['commerce-order'] = $order_load;
+  }
+  else {
+    return;
+  }
+}

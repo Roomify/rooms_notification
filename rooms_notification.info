@@ -3,6 +3,6 @@ description = Manage Rooms notifications.
 core = 7.x
 version = 1.x-dev
 
-package = rooms
+package = Rooms
 
 dependencies[] = rooms_booking
