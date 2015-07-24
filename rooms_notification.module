@@ -40,13 +40,37 @@ function rooms_notification_token_info_alter(&$info) {
     'name' => t('Rooms Order Customer postal code'),
     'description' => t('Customer postal code of a Rooms Order.'),
   );
+  $info['tokens']['commerce-order']['rooms-order-total'] = array(
+    'name' => t('Rooms Order price'),
+    'description' => t('Total price of a Rooms Order.'),
+  );
+  $info['tokens']['commerce-order']['rooms-order-id'] = array(
+    'name' => t('Rooms Order ID'),
+    'description' => t('ID of a Rooms Order.'),
+  );
+
+  $info['tokens']['booking']['start-date'] = array(
+    'name' => t('Rooms Booking Start Date'),
+    'description' => t('Start date of a Rooms Booking.'),
+  );
+  $info['tokens']['booking']['end-date'] = array(
+    'name' => t('Rooms Booking End Date'),
+    'description' => t('End date of a Rooms Booking.'),
+  );
+  $info['tokens']['booking']['booking-id'] = array(
+    'name' => t('Rooms Booking ID'),
+    'description' => t('ID of a Rooms Booking.'),
+  );
+  $info['tokens']['booking']['booking-unit-name'] = array(
+    'name' => t('Rooms Booking Unit Name'),
+    'description' => t('Unit Name of a Rooms Booking.'),
+  );
 }
 
 /**
  * Implements hook_tokens().
  */
 function rooms_notification_tokens($type, $tokens, array $data = array(), array $options = array()) {
-
   $url_options = array('absolute' => TRUE);
 
   if (isset($options['language'])) {
@@ -115,6 +139,38 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
         case 'rooms-order-customer-location':
           $replacements[$original] = $customer_location;
           break;
+        case 'rooms-order-total':
+          $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+          $order_total = $order_wrapper->commerce_order_total->value();
+          $replacements[$original] = commerce_currency_format($order_total['amount'], $order_total['currency_code']);
+          break;
+        case 'rooms-order-id':
+          $replacements[$original] = $order->order_id;
+          break;
+      }
+    }
+  }
+  elseif ($type == 'booking' && !empty($data['booking'])) {
+    $booking = $data['booking'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'start-date':
+          $replacements[$original] = $booking->start_date;
+          break;
+
+        case 'end-date':
+          $replacements[$original] = $booking->end_date;
+          break;
+
+        case 'booking-id':
+          $replacements[$original] = $booking->booking_id;
+          break;
+
+        case 'booking-unit-name':
+          $unit = rooms_unit_load($booking->unit_id);
+          $replacements[$original] = $unit->name;
+          break;
       }
     }
   }
@@ -131,7 +187,9 @@ function rooms_notification_pet_substitutions_alter(&$substitutions, $params) {
     $order_load = commerce_order_load($order->order_id);
     $substitutions['commerce-order'] = $order_load;
   }
-  else {
-    return;
+  if (isset($params['rules_state']) && isset($params['rules_state']->variables['booking'])) {
+    $booking = $params['rules_state']->variables['booking']->value();
+    $booking = rooms_booking_load($booking->booking_id);
+    $substitutions['booking'] = $booking;
   }
 }
