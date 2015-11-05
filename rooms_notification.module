@@ -90,11 +90,11 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
 
     $line_item_details = '';
     // Saving all rooms booking details.
-    foreach ($order->commerce_line_items['und'] as $line_item) {
+    foreach ($order->commerce_line_items[LANGUAGE_NONE] as $line_item) {
       $element = commerce_line_item_load($line_item['line_item_id']);
       $line_item_details .= $element->line_item_label . "\n";
       if (!empty($element->rooms_booking_options)) {
-        foreach ($element->rooms_booking_options['und'] as $option) {
+        foreach ($element->rooms_booking_options[LANGUAGE_NONE] as $option) {
           $line_item_details .= t('- Room Option :') . $option['name'] . "; ";
           $line_item_details .= t('Quantity :') . $option['quantity'] . "; ";
           $line_item_details .= t('Single option cost :') . $option['value'] . ";" . "\n";
@@ -102,13 +102,13 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
       }
     }
     // Load Customer profile to get some information.
-    $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing['und'][0]['profile_id']);
-    $customer_name = $customer_profile->commerce_customer_address['und'][0]['name_line'];
-    $customer_country = $customer_profile->commerce_customer_address['und'][0]['country'];
-    $customer_thoroughfare = $customer_profile->commerce_customer_address['und'][0]['thoroughfare'];
-    $customer_administrative_area = $customer_profile->commerce_customer_address['und'][0]['administrative_area'];
-    $customer_postal_code = $customer_profile->commerce_customer_address['und'][0]['postal_code'];
-    $customer_location = $customer_profile->commerce_customer_address['und'][0]['locality'];
+    $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
+    $customer_name = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
+    $customer_country = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['country'];
+    $customer_thoroughfare = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['thoroughfare'];
+    $customer_administrative_area = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['administrative_area'];
+    $customer_postal_code = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['postal_code'];
+    $customer_location = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['locality'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
