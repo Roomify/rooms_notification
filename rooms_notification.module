@@ -102,13 +102,17 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
       }
     }
     // Load Customer profile to get some information.
-    $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
-    $customer_name = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
-    $customer_country = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['country'];
-    $customer_thoroughfare = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['thoroughfare'];
-    $customer_administrative_area = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['administrative_area'];
-    $customer_postal_code = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['postal_code'];
-    $customer_location = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['locality'];
+    if (isset($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id'])) {
+      $customer_profile = commerce_customer_profile_load($order->commerce_customer_billing[LANGUAGE_NONE][0]['profile_id']);
+      if ($customer_profile !== FALSE) {
+        $customer_name = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['name_line'];
+        $customer_country = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['country'];
+        $customer_thoroughfare = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['thoroughfare'];
+        $customer_administrative_area = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['administrative_area'];
+        $customer_postal_code = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['postal_code'];
+        $customer_location = $customer_profile->commerce_customer_address[LANGUAGE_NONE][0]['locality'];
+      }
+    }
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
@@ -117,27 +121,27 @@ function rooms_notification_tokens($type, $tokens, array $data = array(), array 
           break;
 
         case 'rooms-order-customer-name':
-          $replacements[$original] = $customer_name;
+          $replacements[$original] = (isset($customer_name)) ? $customer_name : '';
           break;
 
         case 'rooms-order-customer-country':
-          $replacements[$original] = $customer_country;
+          $replacements[$original] = (isset($customer_country)) ? $customer_country : '';
           break;
 
         case 'rooms-order-customer-thoroughfare':
-          $replacements[$original] = $customer_thoroughfare;
+          $replacements[$original] = (isset($customer_thoroughfare)) ? $customer_thoroughfare : '';
           break;
 
         case 'rooms-order-customer-administrative-area':
-          $replacements[$original] = $customer_administrative_area;
+          $replacements[$original] = (isset($customer_administrative_area)) ? $customer_administrative_area : '';
           break;
 
         case 'rooms-order-customer-postal-code':
-          $replacements[$original] = $customer_postal_code;
+          $replacements[$original] = (isset($customer_postal_code)) ? $customer_postal_code : '';
           break;
 
         case 'rooms-order-customer-location':
-          $replacements[$original] = $customer_location;
+          $replacements[$original] = (isset($customer_location)) ? $customer_location : '';
           break;
         case 'rooms-order-total':
           $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
